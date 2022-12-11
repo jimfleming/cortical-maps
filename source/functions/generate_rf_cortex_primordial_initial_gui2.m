@@ -1,28 +1,21 @@
 function [output_rf,output_data] = generate_rf_cortex_primordial_initial_gui2(pref_eye,RetinaRF,r_covered_aff,rowRange,colRange,ODCrtxPlt,ONOFFCrtxPlt, ... 
     RetONOFFsorted,sdspread,i_aff_rf_space,synaptic_weight_factor,ODCrtxPlt_smooth,pix2deg,sf_lSamp,n_ori_smooth,sigma_LHI_2d,debug,show_fig)
-% The spread Gaussian function is applied based on the distance in Cortrex not RF space 
-% Measure receptive field in cortex after afferent spread in cortical plate 
-% Cortical RFs : Gaussian weighted sum of afferents 
-%
-% the RF is measured both for one eye (ipsi or contra)
-%   
-% 
-% r_covered_aff   % Average radius of area covered by an afferent in visual space (diameter ~= 1 deg)
-%
-% Sohrab Note       :     the old name was "make_rf_cortex_same_eye2"
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-debug2 = 0; 
-%% Initialization (pre assigning the matrices)
+    % The spread Gaussian function is applied based on the distance in Cortrex not RF space 
+    % Measure receptive field in cortex after afferent spread in cortical plate 
+    % Cortical RFs : Gaussian weighted sum of afferents 
+    %
+    % the RF is measured both for one eye (ipsi or contra)
+    % 
+    % r_covered_aff   % Average radius of area covered by an afferent in visual space (diameter ~= 1 deg)
+    %
+    % Sohrab Note       :     the old name was "make_rf_cortex_same_eye2"
+    debug2 = 0; 
+    %% Initialization (pre assigning the matrices)
     allCXrfnorm{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
     allCXrfON{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
     allCXrfOFF{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
     rRFcenter = zeros(size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2));
     cRFcenter = zeros(size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2));
-%     rRFcenterON = zeros(size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2));
-%     cRFcenterON = zeros(size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2));
-%     rRFcenterOFF = zeros(size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2));
-%     cRFcenterOFF = zeros(size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2));
 
     OriPreferred = zeros(size(ONOFFCrtxPlt));
     dist_center_on_off = zeros(size(ONOFFCrtxPlt));
@@ -40,7 +33,6 @@ debug2 = 0;
     ODI = zeros(size(ONOFFCrtxPlt));
 
     OriHist{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
-    %OriBin{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
     sf_tuning_all{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
     sf_tuning_dog_all{size(ONOFFCrtxPlt,1),size(ONOFFCrtxPlt,2)} = [];
 
@@ -48,10 +40,9 @@ debug2 = 0;
     rf_dom_pow2 = zeros(size(ONOFFCrtxPlt));
 
     TAA = initialize_TAA(ONOFFCrtxPlt, rowRange, colRange);
-%% Main 
+    %% Main 
     mask_covered_aff  = strel('disk', r_covered_aff, 0);
     mask_covered_aff2 = strel('disk', r_covered_aff-1 , 0);
-    %dilate_str = strel('disk',round(sdspread) ,0);
 
     weight_arbor_spread = make_cortical_spread_dist(sdspread); 
     weight_coef_RF = synaptic_weight_factor / max(synaptic_weight_factor(:)); % 0 to 1 Cycle per degree
@@ -74,13 +65,9 @@ debug2 = 0;
             tmpweights = filter2(weight_arbor_spread,WTemp);   
                
             mask_spread = imdialte_grid(row_grid, col_grid, ii, jj, sdspread); 
-%             dist_matrix = sqrt((col_grid - jj).^2 + (row_grid - ii).^2); 
-%             mask_spread = dist_matrix <= sdspread; %   figure,imagesc(mask_spread)
             SelectionCondition = ODMap == 1 & mask_spread == 1;%   figure,imagesc(SelectionCondition)
-            %[SelectionCondition,~] = SelectCellCortexSpread2(dilate_str, ODMap, ii, jj);
             [inda, indb] = find( SelectionCondition );           
             
-            % [ODI(ii,jj),ODI_contra(ii,jj),ODI_ipsi(ii,jj)] = measure_ODI(SelectionCondition,tmpweights,mask_spread,ODCrtxPlt(ii,jj)); 
             ODI(ii,jj) = sum(sum(SelectionCondition.*tmpweights));
             
             %% dominant RF
@@ -108,38 +95,9 @@ debug2 = 0;
                 sgtitle(text)
                 error(text)
             end 
-            % check
-%             [rf_norm2,val_rf_dom_at_r_coverage(ii,jj),rf_dom_pow2(ii,jj)] = add_power_rf_dominant(rf_norm, mask_covered_aff, mask_covered_aff2, center_rf_row, center_rf_col, .1); % add explanation in method 
-            [rf_norm2, val_rf_dom_at_r_coverage(ii,jj), rf_dom_pow2(ii,jj)] = add_power_rf_dominant2(rf_norm, row_grid_rf, col_grid_rf, r_covered_aff, center_rf_row, center_rf_col, .1); % add explanation in method 
-            
-            % another methods that I used 
-            % in case there are separate subregions 
-%             Feature = abs(rf_norm) > .1;
-%             Feature_props = regionprops(Feature,'centroid','Area');
-%             [~,n_features] = bwlabel(Feature);
-%             areas = zeros(n_features,1);
-%             for qq = 1 : n_features
-%                 areas(qq) = Feature_props(qq).Area ;
-%             end
-%             [~,ind] = max(areas);
-%             center_rf_col = round(Feature_props(ind).Centroid(1));
-%             center_rf_row = round(Feature_props(ind).Centroid(2));
- 
-            % finding the center of RF by calculating the average of weighted row/col
-%             Feature = abs(rf_norm) > .1;
-%             size_rf = size(rf_norm,1); 
-%             [col_grid,row_grid] = meshgrid(1:size_rf); 
-%             row_weighted = row_grid(Feature(:)) .* rf_norm(Feature(:)); 
-%             row_mean = sum(row_weighted(:)) / sum(rf_norm(Feature(:))) ; 
-%             center_rf_row = round(row_mean); 
-%             col_weighted = col_grid(Feature(:)) .* rf_norm(Feature(:)); 
-%             col_mean = sum(col_weighted(:)) / sum(rf_norm(Feature(:))) ; 
-%             center_rf_col = round(col_mean); 
 
-            %% non_dominant RF 
-%             temp_mask1 = zeros(size(rf_norm2));
-%             temp_mask1(center_rf_row, center_rf_col) = 1;
-%             temp_mask1 = imdilate(temp_mask1, mask_covered_aff);
+            [rf_norm2, val_rf_dom_at_r_coverage(ii,jj), rf_dom_pow2(ii,jj)] = add_power_rf_dominant2(rf_norm, row_grid_rf, col_grid_rf, r_covered_aff, center_rf_row, center_rf_col, .1); % add explanation in method 
+
             temp_mask1 = imdialte_grid(row_grid_rf, col_grid_rf, center_rf_row, center_rf_col, r_covered_aff); 
             
             weight_other_pol = (1 - abs(rf_norm2 .^ 1)) .* temp_mask1;
@@ -182,21 +140,16 @@ debug2 = 0;
             max_on_response_norm(ii,jj) = Max_on;
             max_off_response_norm(ii,jj) = Max_off;
         
-%             [ori_tuning_resp, sf_tuning_resp, sf_tuning_resp_dog, cv, ori_pref, sf_pref_deg, sf50_deg, lpi, angles_bin, sf_bin_deg] = ... 
-%                fft_ori_sf_tuning6(SingleRFNorm,sf_lSamp,0,pix2deg,0); 
             [ori_tuning_resp, sf_tuning_resp, sf_tuning_resp_dog, cv, ori_pref, sf_pref_deg, sf50_deg, lpi, angles_bin, sf_bin_deg] = ... 
                fft_ori_tuning_uf(SingleRFNorm,sf_lSamp); 
            
             if debug2 == 1 
-                % debug_RF(SingleRFNorm,angles_bin,ori_tuning_resp,ori_pref,sf_tuning_resp_dog,sf_lSamp,sf_pref_deg,pix2deg)
-                 debug_RF_primord(allCXrfTempON,allCXrfTempOFF,SingleRFNorm,aff_center_weight_plot,angles_bin,ori_tuning_resp, ori_pref, sf_bin_deg, sf_tuning_resp_dog, sf_pref_deg, sf50_deg, dist_pol, weight_other_pol, r_covered_aff)
+                debug_RF_primord(allCXrfTempON,allCXrfTempOFF,SingleRFNorm,aff_center_weight_plot,angles_bin,ori_tuning_resp, ori_pref, sf_bin_deg, sf_tuning_resp_dog, sf_pref_deg, sf50_deg, dist_pol, weight_other_pol, r_covered_aff)
             end 
 
             % using the center of dominant polarity (in making mature RFs, it might not work because after rotation, there might not be enough aff available for the other polarity)
             rfcenONOFFrow = center_rf_row(1);
             rfcenONOFFcol = center_rf_col(1); 
-            % using the center of abs(rf)
-            % [rfcenONOFFrow,rfcenONOFFcol] = measure_center_rf(allCXrfTempON,allCXrfTempOFF,SingleRFNorm); 
             
             %%
             OriPreferred(ii,jj) = ori_pref;
@@ -228,7 +181,6 @@ debug2 = 0;
     LHI_map = measure_LHI(OriPreferred,sigma_LHI_2d); 
     LHI_map_smooth = measure_LHI(ori_map_smooth,sigma_LHI_2d); 
     %%  output
-    %output_rf.allCXrfnorm = allCXrfnorm;
     output_rf.allCXrfON = allCXrfON;
     output_rf.allCXrfOFF = allCXrfOFF;
     
@@ -267,16 +219,9 @@ debug2 = 0;
     output_data.rf_dom_pow2 = rf_dom_pow2; 
     
     output_data.TAA = TAA;
-%%  debug  
-    if debug 
-        % show_onoff_balance(CxOnOffBal,ODCrtxPlt_smooth)
-        plot_receptive_field(output_rf,output_data,ii)
-        % plot_rf_linear_lhi_test(output_data,ODCrtxPlt_smooth,ii,180,'reference')
-    end 
 end
 
-
-%% functions 
+%% function
 function w = make_cortical_spread_dist(sdspread)
     r2 = ceil(sdspread*3);
     mu = [0 0]; %   Center of mask
@@ -324,8 +269,6 @@ function [allCXrf, aff_center_weight_plot, TAA] = gen_rf(RetinaRF, RetONOFFsorte
     end
 end
 
-
-
 function [ODI,ODI_contra,ODI_ipsi] = measure_ODI(SelectionCondition,tmpweights,mask_spread,eye_pref)
     ODI = sum(sum(SelectionCondition.*tmpweights));
     aff_dominant_eye_weighted =    (mask_spread .* SelectionCondition) .* tmpweights;
@@ -347,16 +290,6 @@ function CxOnOffBal = ONOFF_balance(CXRFON,CXRFOFF)
 end
 
 function [rfcenONOFFrow,rfcenONOFFcol] = measure_center_rf(allCXrfTempON,allCXrfTempOFF,SingleRFNorm)
-%     max_on = max(allCXrfTempON(:));
-%     [row_on,col_on] = find( max_on == allCXrfTempON);
-% 
-%     allCXrfTempOFF = abs(allCXrfTempOFF);
-%     max_off = max(allCXrfTempOFF(:));
-%     [row_off,col_off] = find( max_off == allCXrfTempOFF);
-% 
-%     rfcenONOFFrow = (row_on * max_on + row_off * max_off) / (max_on + max_off);
-%     rfcenONOFFcol = (col_on * max_on + col_off * max_off) / (max_on + max_off);
-
     rf_abs = abs(SingleRFNorm); 
     [rr,cc] = find(rf_abs > 0.01);
     rrRetinotopy = 0;
@@ -373,64 +306,19 @@ function [rfcenONOFFrow,rfcenONOFFcol] = measure_center_rf(allCXrfTempON,allCXrf
 end
 
 function [max_on_response_norm, max_off_response_norm] = find_max_resp_norm(SingleRFNorm)
-
-    ind_on_rf = SingleRFNorm(:) > 0 ;
+    ind_on_rf = SingleRFNorm(:) > 0;
     max_on_response_norm = max(SingleRFNorm(ind_on_rf));
     if isempty(max_on_response_norm)
         max_on_response_norm = 0;
     end
 
-    ind_off_rf = SingleRFNorm(:) < 0 ;
+    ind_off_rf = SingleRFNorm(:) < 0;
     max_off_response_norm = max(abs(SingleRFNorm(ind_off_rf)));
     if isempty(max_off_response_norm)
         max_off_response_norm = 0;
     end
 end 
 
-%% debug
-function debug_RF_primord(allCXrfTempON,allCXrfTempOFF,SingleRFNorm,aff_center_weight_plot,angles_bin,ori_tuning_resp,ori_pref,sf_bin,sf_tuning_curve,sf_pref_deg,sf50_deg,dist_pol,weight_other_pol,r_covered_aff)
-    %debug
-    ind_nan = aff_center_weight_plot(:,3) == 0; 
-    aff_center_weight_plot(ind_nan,3) = nan; 
-    
-    data = aff_center_weight_plot;
-    ind_on = data(:,4) == 1;
-    rfONXcenter = data(ind_on,1);
-    rfONYcenter = data(ind_on,2);
-    weightON = data(ind_on,3);
-
-    ind_off = ~ind_on;
-    rfOFFXcenter = data(ind_off,1);
-    rfOFFYcenter = data(ind_off,2);
-    weightOFF = data(ind_off,3);
-    %%
-    figure,clf
-    %RFSpaceSim = allCXrfTempON + allCXrfTempOFF ;
-    %SingleRFNorm = RFSpaceSim / max(abs(RFSpaceSim(:)));
-    caxisVal = 5;%0.6;
-    subplot(241),imagesc(allCXrfTempON),axis square,colormap('jet'),colorbar%,caxis([-caxisVal caxisVal])
-    subplot(242),imagesc(allCXrfTempOFF),axis square,colormap('jet'),colorbar%,caxis([-caxisVal caxisVal])
-    subplot(243),imagesc(SingleRFNorm),caxis([-1 1]),axis square,colormap('jet'),colorbar
-    
-    subplot(245),imagesc(weight_other_pol),caxis([-1 1]),axis square,colormap('jet'),colorbar
-    title(sprintf('R aff covered:%.2f',r_covered_aff))
-    
-    %hold on, plot(rfcenONOFFcol,rfcenONOFFrow,'ko')
-    %subplot(242),imagesc(SelectionCondition.*ONOFFCrtxPlt),axis square,colormap('jet'),colorbar
-    subplot(244),imagesc(zeros(size(SingleRFNorm))),set(gca,'ydir','reverse'),axis 'square'; colorbar
-    hold on , scatter(rfONXcenter,rfONYcenter,weightON*50,'r','filled')
-    hold on , scatter(rfOFFXcenter,rfOFFYcenter,weightOFF*50,'b','filled')
-    title(sprintf('dist pol:%.2f',dist_pol))
-    
-    
-    %%
-    subplot(247), polar1(angles_bin,ori_tuning_resp','k');title(sprintf('Ori = %.2f',ori_pref))
-    subplot(248),plot(sf_bin,sf_tuning_curve,'lineWidth',2); axis square
-    set(gca, 'XScale', 'log','box','off','Tickdir','out','YTickLabel',[],'XTickLabel',[])
-    title(sprintf('sf:%.2f \n sf50:%.2f',sf_pref_deg,sf50_deg ))
-end
-
-%%
 function plot_receptive_field(output_rf,output_data,electrodePos)
 
     allCXrfONReference = output_rf.allCXrfON ;
@@ -443,14 +331,11 @@ function plot_receptive_field(output_rf,output_data,electrodePos)
     SFHistRFReference = output_data.SFHist_dog;
     sfpref = output_data.SFPref; 
     sfpref50 = output_data.SF50Pref; 
-    %sf_bin_deg = OutputRFCrtxReference.sf_bin_deg; 
     
     dist_center_on_off = output_data.dist_center_on_off; 
     
     figure;clf
     set(gcf,'position',[10         677        1673         300])
-    %set(fg11,'position',[10         677        1673         225])
-    %set(fg11,'position',[10         300        1673         450])
     xs = linspace(0.02,0.99-(1/32),32);
     width = 1/(32*1.3);
     height = 1/(3*1.35);
@@ -487,23 +372,15 @@ function plot_receptive_field(output_rf,output_data,electrodePos)
 
         axes('Position',[xs(ii/2+1),0.25,width,height])
         ori_tuning = OriHistRFReference{electrodePos,ii};
-        %angles = OriBinRFReference{electrodePos,ii};%{electrodePos,ii};
         angles = OriBinRFReference; 
         ph = polar1(angles,ori_tuning','k');
 
-    %     r = sfpref(electrodePos,ii);
-    %     CyclePix = size(RFreONOFF,1) / r; % Cycle in pixel
-    %     CycleDeg = CyclePix / deg2pix;
-    %     CyclePerDeg = 1/CycleDeg;
-
         axes('Position',[xs(ii/2+1),0.00,width,height])
         SFPlot = SFHistRFReference{electrodePos,ii};
-        %SFPlot = (SFHistRFReference(electrodePos,ii,:));
         plot(sf_bin,SFPlot,'lineWidth',2);
         axis square
         set(gca, 'XScale', 'log');
         set(gca,'box','off','Tickdir','out','YTickLabel',[],'XTickLabel',[])
-        % title(sprintf('%.2f \n %.2f',sfpref(electrodePos,ii),sfpref50(electrodePos,ii)))
         title(sprintf('%2.0f \n %.2f \n %.2f',dist_center_on_off(electrodePos,ii),sfpref(electrodePos,ii),sfpref50(electrodePos,ii)))
         
         annotation('textbox',[0.01 0.88 0.1 0.1],'String',['row = ' num2str(electrodePos)],'EdgeColor','none','fontsize',14)
@@ -514,20 +391,19 @@ end
 
 
 function [rf_norm2,val_rf_dom_at_r_coverage,rf_dom_pow2] = add_power_rf_dominant(rf_norm, mask_covered_aff, mask_covered_aff2, center_rf_row, center_rf_col, thresh_rf)
-% The function calculates the average value of rf_norm at the r_covered_aff
-% it adds power function to the rf_norm if it is above the thresh_rf
-% to bring the average 
-%
-% Inputs 
-% thresh_rf = .1;   the desired value of the sum of RF at r afferent coeverage value below thresh_rf
-% mask_covered_aff  = strel('disk',r_covered_aff,0);
-% mask_covered_aff2 = strel('disk',r_covered_aff-1 ,0);
-%
-% Outputs 
-% rf_norm : The new rf_nom, if the value is under the threshold, this does not change 
-% val_rf_dom_at_r_coverage : the average value of rf_norm at the r_covered_aff
-% rf_dom_pow2              : the power used to calculate the new rf_norm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % The function calculates the average value of rf_norm at the r_covered_aff
+    % it adds power function to the rf_norm if it is above the thresh_rf
+    % to bring the average 
+    %
+    % Inputs 
+    % thresh_rf = .1;   the desired value of the sum of RF at r afferent coeverage value below thresh_rf
+    % mask_covered_aff  = strel('disk',r_covered_aff,0);
+    % mask_covered_aff2 = strel('disk',r_covered_aff-1 ,0);
+    %
+    % Outputs 
+    % rf_norm : The new rf_nom, if the value is under the threshold, this does not change 
+    % val_rf_dom_at_r_coverage : the average value of rf_norm at the r_covered_aff
+    % rf_dom_pow2              : the power used to calculate the new rf_norm
 
     temp_mask1 = zeros(size(rf_norm));
     temp_mask1(center_rf_row,center_rf_col) = 1;
@@ -539,34 +415,28 @@ function [rf_norm2,val_rf_dom_at_r_coverage,rf_dom_pow2] = add_power_rf_dominant
     if val_rf_dom_at_r_coverage > thresh_rf
         rf_dom_pow2 = log(thresh_rf)/log(val_rf_dom_at_r_coverage); % val_rf_dom_at_r_coverage .^ rf_dom_pow2 = thresh_rf ==> rf_dom_pow2 = LOGval_rf_dom_at_r_coverage(thresh_rf)
         rf_norm2 = abs(rf_norm .^ rf_dom_pow2) ;%* sgn_rf_cortex;
-        %   allCXrfTempDominant = rf_norm .* max_dominant_rf_value;
         rf_dom_at_r_coverage = (mask_coverage_circle .* rf_norm2) ;
         val_rf_dom_at_r_coverage = sum(rf_dom_at_r_coverage(:)) / sum(mask_coverage_circle(:));
     else 
         rf_norm2 = rf_norm; 
     end
-    
 end 
 
 function [rf_norm2,val_rf_dom_at_r_coverage,rf_dom_pow2] = add_power_rf_dominant2(rf_norm, row_grid_rf, col_grid_rf, r_covered_aff, center_rf_row, center_rf_col, thresh_rf)
-% The function calculates the average value of rf_norm at the r_covered_aff
-% it adds power function to the rf_norm if it is above the thresh_rf
-% to bring the average 
-%
-% Inputs 
-% thresh_rf = .1;   the desired value of the sum of RF at r afferent coeverage value below thresh_rf
-% mask_covered_aff  = strel('disk',r_covered_aff,0);
-% mask_covered_aff2 = strel('disk',r_covered_aff-1 ,0);
-%
-% Outputs 
-% rf_norm : The new rf_nom, if the value is under the threshold, this does not change 
-% val_rf_dom_at_r_coverage : the average value of rf_norm at the r_covered_aff
-% rf_dom_pow2              : the power used to calculate the new rf_norm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % The function calculates the average value of rf_norm at the r_covered_aff
+    % it adds power function to the rf_norm if it is above the thresh_rf
+    % to bring the average 
+    %
+    % Inputs 
+    % thresh_rf = .1;   the desired value of the sum of RF at r afferent coeverage value below thresh_rf
+    % mask_covered_aff  = strel('disk',r_covered_aff,0);
+    % mask_covered_aff2 = strel('disk',r_covered_aff-1 ,0);
+    %
+    % Outputs 
+    % rf_norm : The new rf_nom, if the value is under the threshold, this does not change 
+    % val_rf_dom_at_r_coverage : the average value of rf_norm at the r_covered_aff
+    % rf_dom_pow2              : the power used to calculate the new rf_norm
 
-%     temp_mask1 = zeros(size(rf_norm));
-%     temp_mask1(center_rf_row,center_rf_col) = 1;
-    % mask_coverage_circle = imdilate(temp_mask1, mask_covered_aff) - imdilate(temp_mask1, mask_covered_aff2);
     mask_spread1 = imdialte_grid(row_grid_rf, col_grid_rf, center_rf_row, center_rf_col, r_covered_aff-1); 
     mask_spread2 = imdialte_grid(row_grid_rf, col_grid_rf, center_rf_row, center_rf_col, r_covered_aff); 
     mask_coverage_circle = mask_spread2 - mask_spread1; 
@@ -577,7 +447,6 @@ function [rf_norm2,val_rf_dom_at_r_coverage,rf_dom_pow2] = add_power_rf_dominant
     if val_rf_dom_at_r_coverage > thresh_rf
         rf_dom_pow2 = log(thresh_rf)/log(val_rf_dom_at_r_coverage); % val_rf_dom_at_r_coverage .^ rf_dom_pow2 = thresh_rf ==> rf_dom_pow2 = LOGval_rf_dom_at_r_coverage(thresh_rf)
         rf_norm2 = abs(rf_norm .^ rf_dom_pow2) ;%* sgn_rf_cortex;
-        %   allCXrfTempDominant = rf_norm .* max_dominant_rf_value;
         rf_dom_at_r_coverage = (mask_coverage_circle .* rf_norm2) ;
         val_rf_dom_at_r_coverage = sum(rf_dom_at_r_coverage(:)) / sum(mask_coverage_circle(:));
     else 
@@ -587,17 +456,17 @@ function [rf_norm2,val_rf_dom_at_r_coverage,rf_dom_pow2] = add_power_rf_dominant
 end 
 
 function [rf_center_row, rf_center_col] = find_center_rf(rf_norm)
-% finding the center of RFs by averaging the rf value for all the pixels 
-        rf_abs = abs(rf_norm); 
-        rf_size = size( rf_abs , 1) ;
-        [ XX , YY ] = meshgrid( 1:rf_size , 1:rf_size ); 
-        % measure rf center by averaging the rf_abs
-        sum_rf = sum( rf_abs , [1,2]);
-        rf_xx = sum(rf_abs .* XX , [1,2]) / sum_rf ; 
-        rf_yy = sum(rf_abs .* YY , [1,2]) / sum_rf ;
-        
-        rf_center_row = round(rf_yy); 
-        rf_center_col = round(rf_xx); 
+    % finding the center of RFs by averaging the rf value for all the pixels 
+    rf_abs = abs(rf_norm); 
+    rf_size = size( rf_abs , 1) ;
+    [ XX , YY ] = meshgrid( 1:rf_size , 1:rf_size ); 
+    % measure rf center by averaging the rf_abs
+    sum_rf = sum( rf_abs , [1,2]);
+    rf_xx = sum(rf_abs .* XX , [1,2]) / sum_rf ; 
+    rf_yy = sum(rf_abs .* YY , [1,2]) / sum_rf ;
+    
+    rf_center_row = round(rf_yy); 
+    rf_center_col = round(rf_xx); 
 end 
 
 function TAA = initialize_TAA(ONOFFCrtxPlt, rowRange, colRange)

@@ -17,8 +17,6 @@ function [pw_locations] = get_pinwheel_location_and_charge_coverage(ori_map,show
     if show_fig == 1
         figure;
         imagesc(ori_map); axis square; colormap(hsv); colorbar; hold on;
-%         cReal = contour(real(z), [0 0], 'r', 'LineWidth', 2);
-%         cImag = contour(imag(z), [0 0], 'b', 'LineWidth', 2);
         contour(real(z), [0 0], 'r', 'LineWidth', 2);
         contour(imag(z), [0 0], 'b', 'LineWidth', 2);
     end
@@ -51,34 +49,7 @@ function [pw_locations] = get_pinwheel_location_and_charge_coverage(ori_map,show
         [~, idx, ~] = unique(pw_locations_int, 'rows');
         pw_locations_int = pw_locations_int(sort(idx), :);
         pw_locations = pw_locations(sort(idx), :);
-        
     end
-    % eliminate the pinwheels at borders
-%     above_lowerlim_ind = all(pw_locations >= border_size + 0.5, 2);   % + 0.5 because the indices start from the middle of the pixel
-%     pw_locations_int = pw_locations_int(above_lowerlim_ind, :);
-%     pw_locations = pw_locations(above_lowerlim_ind, :);
-%     below_upperlim_indx = pw_locations(:, 2) <= size(ori_map, 2) + 0.5 - border_size;
-%     pw_locations_int = pw_locations_int(below_upperlim_indx, :);
-%     pw_locations = pw_locations(below_upperlim_indx, :);
-%     below_upperlim_indy = pw_locations(:, 1) <= size(ori_map, 1) + 0.5 - border_size;
-%     pw_locations_int = pw_locations_int(below_upperlim_indy, :);
-%     pw_locations = pw_locations(below_upperlim_indy, :);
-    
-    % determine pinwheel charges
-%     [grx, gry] = gradient(real(z));
-%     [gix, giy] = gradient(imag(z));
-%     pw_ind = sub2ind(size(ori_map), pw_locations_int(:, 2), pw_locations_int(:, 1));
-%     a_list = grx(pw_ind);
-%     b_list = gry(pw_ind);
-%     c_list = gix(pw_ind);
-%     d_list = giy(pw_ind);
-%     pw_charges = sign(a_list .* d_list - b_list .* c_list);
-%     
-%     disp(['Number of pinwheels: ' num2str(length(pw_locations))]);
-%     if pw_locations
-%         scatter(pw_locations(pw_charges>0, 1), pw_locations(pw_charges>0, 2), 50, 'w', 'filled');
-%         scatter(pw_locations(pw_charges<0, 1), pw_locations(pw_charges<0, 2), 50, 'k', 'filled');
-%     end
 end
 
 function [contour_coord_arr, element_nums] = get_contour_coord(contour_matrix, least_polygon_side_num)
@@ -116,11 +87,9 @@ function [crossed, m, n] = line_cross(l1_p1, l1_p2, l2_p1, l2_p2)
 end
 
 function [crossed, intersect_coord] = is_crossed(coord, contour2_coor, thres_distance)
-    %
     % coord: [prev_point, current_point, next_point, next_2_point] of the first contour
     % contour2_coor: the coordinates of the second contour
     % thres_distance: The threshold of distance in pixel that the point will be considered
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     prev_coor = coord(1,:); coor = coord(2,:); next_coor = coord(3,:); next2_coor = coord(4,:);
     distances = sqrt(sum((coor-contour2_coor).^2, 2));
@@ -171,11 +140,9 @@ function [crossed, intersect_coord] = is_crossed(coord, contour2_coor, thres_dis
 end
 
 function cross = get_intersection(contour1_coor, contour2_coor, thres_distance)
-    %
     % contour1_coor: Contour coordinates of OD columns
     % contour2_coor: Contour coordinates of another map (spatial frequency, orientations, etc.)
     % thres_distance: The threshold of distance in pixel that the point will be considered
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     cross = [];
     for i = 1:length(contour1_coor)-1
         coor = contour1_coor(i, :);
