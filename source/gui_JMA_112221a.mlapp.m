@@ -85,7 +85,7 @@ function update_thalamic_aff_UI(app, appdata)
             row_aff_all(cc) = row_aff;
             col_aff_all(cc) = col_aff;
             
-                % to calculate the number of overlapping receptive fields in visual space 
+            % to calculate the number of overlapping receptive fields in visual space 
             temp_sum_aff = zeros(size(rf_space_x, 1)); 
             temp_sum_aff(row_aff, col_aff) = 1; 
             sum_aff = imdilate(temp_sum_aff, disk_element) + sum_aff;  
@@ -141,23 +141,12 @@ function [appdata] = show_maps_segregation(app, appdata)
     setAxes(app, axes_od_onoff)
 
     axes_retinotopy.Visible = 'on';
-    cla(axes_retinotopy), % imagesc(map_retinotopy, 'Parent', axes_onoff)
+    cla(axes_retinotopy)
     imshow(map_retinotopy, cmap_map_retinotopy, 'Parent', axes_retinotopy)
     axis(axes_retinotopy, 'square')
     app.title_retinotopy.Visible = 'on';
     xlim(axes_retinotopy, [1 width_cortex]), ylim(axes_retinotopy, [1 width_cortex])
     setAxes(app, axes_retinotopy)
-
-    pause(0.01)
-end
-
-function updatSmoothUI(app, appdata, axes)
-    z5 = double(appdata.ODCrtxPlt_interpolated>0.5)+1 ;
-    z6 = double(appdata.ONOFF_interpolated<.5)*2 ;
-
-    imshow(z5+z6,appdata.map1, 'Parent',axes); hold(axes,'on');
-    contour(axes,appdata.ODCrtxPlt_interpolated, app.appdata.od_contour_levels, 'k', 'LineWidth', 5);
-    setAxes(app,axes);
 end
 
 function update_primord_orimap_UI(app, appdata)
@@ -170,7 +159,6 @@ function update_primord_orimap_UI(app, appdata)
     cla(axes1)
     imshow(primord_orimap_contra, hsv(180), 'Parent', axes1); hold(axes1, 'on');
     contour( axes1, appdata.ODCrtxPlt_smooth, 1, 'k', 'LineWidth', 1);
-    % title(axes1, 'Primordial orientation map (contra)') % , 'fontsize', 14)
     xlabel(axes1, 'contra') % , 'fontsize', 14)
     setAxes(app, axes1);
     axes1.XColor = appdata.contra_font_color;
@@ -180,7 +168,6 @@ function update_primord_orimap_UI(app, appdata)
     cla(axes2)
     imshow(primord_orimap_ipsi, hsv(180), 'Parent', axes2); hold(axes2, 'on');
     contour(axes2, appdata.ODCrtxPlt_smooth, 1, 'k', 'LineWidth', 1);
-    % title(axes2, 'Primordial orientation map (ipsi)')
     xlabel(axes2, 'ipsi')
     setAxes(app, axes2);
     axes2.XColor = appdata.ipsi_font_color;
@@ -196,14 +183,12 @@ function update_mature_orimaps_UI(app, appdata)
 
     ax1 = app.UIAxes_mature_orimap_contra;
     imshow(mature_orimap_contra, hsv(180), 'Parent', ax1); hold(ax1,'on');
-    % title(ax1, 'Adult orientation map (contra)')
     xlabel(ax1, 'contra')
     contour(ax1, appdata.ODCrtxPlt_interpolated, app.appdata.od_contour, 'k', 'LineWidth', 1);% app.od_contour_w);
     setAxes(app, ax1);
 
     ax2 = app.UIAxes_mature_orimap_ipsi;
     imshow(mature_orimap_ipsi, hsv(180), 'Parent', ax2); hold(ax2,'on');
-    % title(ax2, 'Adult orientation map (ipsi)')
     xlabel(ax2, 'ipsi')
     contour(ax2, appdata.ODCrtxPlt_interpolated, app.appdata.od_contour, 'k', 'LineWidth', 1); %app.od_contour_w);
     setAxes(app, ax2);

@@ -1,4 +1,5 @@
 function [appdata] = smooth_map_app(appdata)
+    % Self: Blurs
     ODCrtxPlt = appdata.ODCrtxPlt;
     ONOFFCrtxPlt = appdata.ONOFFCrtxPlt;
     n_interp = appdata.n_interpol;

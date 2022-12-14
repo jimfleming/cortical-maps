@@ -5,9 +5,7 @@ function [appdata] = sort_afferent_od2_app(appdata)
     ret_initial= appdata.Retinotopy3mIndex;
     retinotopyPlot= appdata.Retinotopy3mIndPlot;
     N_repeat= appdata.NSortOD;
-    cmap= appdata.cmap;
     rng_trial= appdata.rng_trial;
-    show_fig = 0;
 
     rng(rng_trial)
 
@@ -15,7 +13,6 @@ function [appdata] = sort_afferent_od2_app(appdata)
     Crtx_plt_ONOFF_OD_sorted = Crtx_plt_ONOFF;
     ret_sorted = ret_initial;
 
-    retinotopyPlot_initial = retinotopyPlot ;
     OD_holder{N_repeat} = [];
     ONOFF_holder{N_repeat} = [];
     retinotopy_holder{N_repeat} = [];
