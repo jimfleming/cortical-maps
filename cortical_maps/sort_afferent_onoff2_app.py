@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.ndimage
 from dataclasses import dataclass
-from tqdm import trange
+from tqdm.notebook import trange
 
 
 @dataclass
@@ -9,6 +9,7 @@ class MapStepHolder:
     OD_holder: np.ndarray
     ONOFF_holder: np.ndarray
     retinotopy_holder: np.ndarray
+    retinotopy_plot_holder: np.ndarray
 
 
 def sort_afferent_onoff2_app(appdata):
@@ -24,9 +25,9 @@ def sort_afferent_onoff2_app(appdata):
     # within the same OD band
     rng = np.random.default_rng(seed=rng_trial)
 
-    onoff_sorted = onoff_input
-    od_sorted = od_input
-    ret_sorted = retinotopy_input
+    onoff_sorted = onoff_input.copy()
+    od_sorted = od_input.copy()
+    ret_sorted = retinotopy_input.copy()
 
     OD_holder = []
     ONOFF_holder = []
@@ -37,7 +38,6 @@ def sort_afferent_onoff2_app(appdata):
         Affr, Affc = np.nonzero(onoff_sorted != 0)
         ind_rand2 = rng.permutation(len(Affr))
         for q in range(len(Affr)):
-            ind_replace = []
             i1 = Affr[ind_rand2[q]]
             j1 = Affc[ind_rand2[q]]
 
@@ -83,9 +83,9 @@ def sort_afferent_onoff2_app(appdata):
                 for k1 in range(len(srch_r)):
                     temp_result = onoff_sorted.copy()
                     temp_result[i1, j1] = onoff_sorted[srch_r[k1], srch_c[k1]]
-                    temp_result[srch_r[k1], srch_c[k1]] = 1
+                    temp_result[srch_r[k1], srch_c[k1]] = onoff_sorted[i1, j1]
                     temp_mask_Contra = np.roll(
-                        temp_mask1, (srch_r[k1] - i1, srch_c[k1] - j1)
+                        temp_mask1, (srch_r[k1] - i1, srch_c[k1] - j1), axis=(0, 1)
                     )
 
                     # Convolution Center Contra
@@ -131,9 +131,9 @@ def sort_afferent_onoff2_app(appdata):
                 for k1 in range(len(srch_r)):
                     temp_result = onoff_sorted.copy()
                     temp_result[i1, j1] = onoff_sorted[srch_r[k1], srch_c[k1]]
-                    temp_result[srch_r[k1], srch_c[k1]] = 1
+                    temp_result[srch_r[k1], srch_c[k1]] = onoff_sorted[i1, j1]
                     temp_mask_Contra = np.roll(
-                        temp_mask1, (srch_r[k1] - i1, srch_c[k1] - j1)
+                        temp_mask1, (srch_r[k1] - i1, srch_c[k1] - j1), axis=(0, 1)
                     )
 
                     # Convolution Center Contra
@@ -191,7 +191,8 @@ def sort_afferent_onoff2_app(appdata):
     map_step_holder = MapStepHolder(
         OD_holder=OD_holder,
         ONOFF_holder=ONOFF_holder,
-        retinotopy_holder=retinotopy_plot_holder,
+        retinotopy_holder=retinotopy_holder,
+        retinotopy_plot_holder=retinotopy_plot_holder,
     )
 
     appdata.ONOFFCrtxPlt = onoff_sorted

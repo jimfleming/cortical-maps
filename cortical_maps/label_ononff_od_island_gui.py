@@ -29,13 +29,14 @@ def label_ononff_od_island_gui(appdata):
         cc = 0
         for bb in range(len(indPinwheelSorted)):  #  NumPinwheel
             iPw = indPinwheelSorted[bb]
-            if FeatureArea(iPw) > FeatureRemoveCriteria:
+            if FeatureArea[iPw] > FeatureRemoveCriteria:
                 ONOFFODLabelSorted = ONOFFODLabelSorted + (ONOFFODLabel == iPw) * cc
                 CenterPinwheelSorted.append(FeatureCenter[iPw])
                 cc = cc + 1
     else:
         CenterPinwheelSorted = []
-        CenterPWImage = []
+        CenterPWImage = np.zeros_like(CenterPWImage)
+    CenterPinwheelSorted = np.array(CenterPinwheelSorted)
     return ONOFFODLabelSorted, CenterPinwheelSorted, NumPinwheel, CenterPWImage
 
 

@@ -1,3 +1,9 @@
+def smooth_ori_euler(
+    developed_reference_ori_map, ODCrtxPlt_smooth, n_ori_smooth, debug, show_fig
+):
+    pass
+
+
 # function [ori_map_smooth,ori_map_interpolated] = smooth_ori_euler(developed_reference_ori_map,ODCrtxPlt_smooth,n_ori_smooth,debug,show_fig)
 #     %   This function plots
 #     %   INPUT   :   OriSpaceAll

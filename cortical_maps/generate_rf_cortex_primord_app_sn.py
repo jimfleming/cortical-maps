@@ -1,5 +1,9 @@
-# from cortical_maps.generate_rf_cortex_primordial_initial_gui import generate_rf_cortex_primordial_initial_gui
-# from cortical_maps.smooth_ori_euler import smooth_ori_euler
+from cortical_maps.generate_rf_cortex_primordial_initial_gui import (
+    generate_rf_cortex_primordial_initial_gui,
+)
+from cortical_maps.smooth_ori_euler import smooth_ori_euler
+from cortical_maps.modify_ori_coverage2 import modify_ori_coverage2
+from cortical_maps.orientation_map_development2 import orientation_map_development2
 
 
 def generate_rf_cortex_primord_app_sn(appdata):
@@ -79,12 +83,6 @@ def generate_rf_cortex_primord_app_sn(appdata):
     ) + primord_orimap_ipsi * (ODCrtxPlt == -1)
     primord_orimap_smooth, _ = smooth_ori_euler(
         primord_orimap_dominant_eye, [], n_ori_smooth, 0, 0
-    )
-    show_orimap_contra_ipsi(
-        primord_orimap_contra_smooth,
-        primord_orimap_ipsi_smooth,
-        primord_orimap_smooth,
-        ODCrtxPlt_smooth,
     )
 
     # Modify coverage of ori map for each island

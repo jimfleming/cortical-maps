@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.ndimage
-from tqdm import trange
+from tqdm.notebook import trange
 from cortical_maps.fspecial import gaussian_fspecial
 
 
@@ -20,15 +20,17 @@ def make_rf_retina(
     RFOFFfilt = filt_rf_retina_off
     for jj in trange(TotalRetinaCells):
         tempGridFilter = IndRetinaRfspace == jj
-        PolarityRFSpace = onoff_rf_space[tempGridFilter]
-        import ipdb
-
-        ipdb.set_trace()
+        PolarityRFSpace = onoff_rf_space[tempGridFilter][0]
         if PolarityRFSpace == 1:
-            tmpRFON = scipy.ndimage.convolve(tempGridFilter, RFONfilt)
+            tmpRFON = scipy.ndimage.convolve(
+                tempGridFilter.astype(float), RFONfilt, mode="constant"
+            )
             tmpRFONOFF = tmpRFON / np.amax(np.abs(tmpRFON))
         elif PolarityRFSpace == -1:
-            tmpRFOFF = scipy.ndimage.convolve(tempGridFilter, RFOFFfilt)
+            tmpRFOFF = scipy.ndimage.convolve(
+                tempGridFilter.astype(float), RFOFFfilt, mode="constant"
+            )
             tmpRFONOFF = (-1 * tmpRFOFF) / np.amax(np.abs(tmpRFOFF))
         RetinaRF.append(tmpRFONOFF)
+    RetinaRF = np.array(RetinaRF)
     return RetinaRF
